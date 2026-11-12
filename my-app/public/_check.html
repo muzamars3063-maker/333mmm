@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<body style="margin:0">
+<iframe id="frame" src="/" style="width:1440px;height:7000px;border:0"></iframe>
+<pre id="out"></pre>
+<script>
+const frame = document.getElementById('frame')
+const params = new URLSearchParams(location.search)
+const width = Number(params.get('w') || 1440)
+const height = Number(params.get('h') || 7000)
+frame.style.width = width + 'px'
+frame.style.height = height + 'px'
+frame.onload = () => {
+  setTimeout(() => {
+    const doc = frame.contentDocument
+    const win = frame.contentWindow
+    const lines = []
+    const selectors = [
+      '.offer-widget-01',
+      '.top-nav',
+      '.desk-nav',
+      '.bottom-nav',
+      '.banner-area',
+      '.features-section-01',
+      '.best-deal-section-01',
+      '.shop-category-section-01',
+      '.products-section-01',
+      '.banner-area-02',
+      '.products-section-02',
+      '.products-section-03',
+      '.cta-section-01',
+      '.news-section-01',
+      '.newsletter-section-01',
+      '.footer-section-01',
+      '.copyright-01',
+    ]
+    for (const selector of selectors) {
+      const el = doc.querySelector(selector)
+      if (!el) {
+        lines.push('MISSING ' + selector)
+        continue
+      }
+      const rect = el.getBoundingClientRect()
+      const style = win.getComputedStyle(el)
+      lines.push(`${selector} x=${Math.round(rect.x)} y=${Math.round(rect.y)} w=${Math.round(rect.width)} h=${Math.round(rect.height)} display=${style.display}`)
+    }
+    lines.push('body scrollWidth=' + doc.documentElement.scrollWidth + ' clientWidth=' + doc.documentElement.clientWidth)
+    lines.push('body scrollHeight=' + doc.documentElement.scrollHeight)
+    lines.push('slick initialized=' + doc.querySelectorAll('.slick-initialized').length)
+    lines.push('slick slides=' + doc.querySelectorAll('.slick-slide').length)
+    lines.push('nice select=' + doc.querySelectorAll('.nice-select').length)
+    lines.push('cards=' + doc.querySelectorAll('.card-product').length)
+    lines.push('broken images=' + Array.from(doc.images).filter((img) => !img.naturalWidth).map((img) => img.getAttribute('src')).join(','))
+    const hero = doc.querySelector('.banner-slider-content-01')
+    if (hero) {
+      const heroStyle = win.getComputedStyle(hero)
+      lines.push('hero display=' + heroStyle.display + ' height=' + Math.round(hero.getBoundingClientRect().height))
+    }
+    const tab = doc.querySelector('.products-section-01 .nav-link.active')
+    lines.push('active tab=' + (tab ? tab.textContent : 'none'))
+    const badge = doc.querySelector('.big-product-card-01 .offer-tag')
+    lines.push('offer tags=' + (badge ? badge.children.length : 'none'))
+    lines.push('mobile header display=' + win.getComputedStyle(doc.querySelector('.mobile-menu-trigger-dark')).display)
+    lines.push('desktop nav display=' + win.getComputedStyle(doc.querySelector('.desk-nav')).display)
+    lines.push('offer widget display=' + win.getComputedStyle(doc.querySelector('.offer-widget-01')).display)
+    lines.push('menu trigger display=' + win.getComputedStyle(doc.querySelector('.mobile-menu-trigger')).display)
+    document.getElementById('out').textContent = lines.join('\n')
+  }, 3000)
+}
+</script>
+</body>
+</html>
